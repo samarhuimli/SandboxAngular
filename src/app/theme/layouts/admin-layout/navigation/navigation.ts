@@ -27,10 +27,10 @@ export const NavigationItems: NavigationItem[] = [
     children: [
       {
         id: 'default',
-        title: 'Default',
+        title: 'Dashboard',
         type: 'item',
         classes: 'nav-item',
-        url: '/dashboard/default',
+        url: '/dashboard',
         icon: 'dashboard',
         breadcrumbs: false
       }

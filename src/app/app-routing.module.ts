@@ -9,43 +9,32 @@ import { GuestComponent } from './theme/layouts/guest/guest.component';
 const routes: Routes = [
   {
     path: '',
-    component: AdminComponent,
+    component: GuestComponent,
     children: [
       {
         path: '',
-        redirectTo: '/dashboard/default',
+        redirectTo: '/login',
         pathMatch: 'full'
       },
       {
-        path: 'dashboard/default',
-        loadComponent: () => import('./demo/default/dashboard/dashboard.component').then((c) => c.DefaultComponent)
+        path: 'login',
+        loadComponent: () => import('./authentication/login/login.component')
       },
       {
-        path: 'typography',
-        loadComponent: () => import('./demo/ui-component/typography/typography.component')
-      },
-      {
-        path: 'color',
-        loadComponent: () => import('./demo/ui-component/ui-color/ui-color.component')
-      },
-      {
-        path: 'sample-page',
-        loadComponent: () => import('./demo/other/sample-page/sample-page.component')
+        path: 'register',
+        loadComponent: () => import('./authentication/register/register.component')
       }
     ]
   },
   {
     path: '',
-    component: GuestComponent,
+    component: AdminComponent,
     children: [
       {
-        path: 'login',
-        loadComponent: () => import('./demo/authentication/login/login.component')
+        path: 'dashboard',
+        loadComponent: () => import('./sideBar/dashboard/dashboard.component').then((c) => c.DashboardComponent)
+
       },
-      {
-        path: 'register',
-        loadComponent: () => import('./demo/authentication/register/register.component')
-      }
     ]
   }
 ];
