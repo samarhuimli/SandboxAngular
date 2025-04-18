@@ -1,0 +1,93 @@
+<div class="container">
+  <!-- Messages de notification -->
+  <div class="notification-container">
+    <div *ngIf="message" [class]="isError ? 'error-message' : 'success-message'">
+      <span>{{ message }}</span>
+      <button class="close-btn" (click)="message = ''">&times;</button>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+    <span>Chargement en cours...</span>
+  </div>
+
+  <!-- Liste des scripts -->
+  <div class="scripts-grid">
+    <div *ngFor="let script of scripts" class="script-card">
+      <div class="card-header">
+        <h3>{{ script.title }}</h3>
+        <span class="script-type-badge" [ngClass]="{
+          'python': script.type === 'PYTHON',
+          'r': script.type === 'R',
+          'sql': script.type === 'SQL'
+        }">
+          {{ script.type }}
+        </span>
+      </div>
+      <div class="card-body">
+        <pre>{{ script.content }}</pre>
+        <div class="card-footer">
+          <p><i class="fas fa-user"></i> {{ script.createdBy }}</p>
+          <div class="action-buttons">
+            <button class="btn-edit" (click)="editScript(script)">
+              <i class="fas fa-edit"></i> Modifier
+            </button>
+            <button class="btn-delete" (click)="deleteScript(script.id!)">
+              <i class="fas fa-trash"></i> Supprimer
+            </button>
+            <button class="btn-execute" (click)="executeScript(script.id!)">
+              <i class="fas fa-play"></i> Exécuter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="form-container">
+    <h2>{{ isEdit ? 'Modifier un script' : 'Créer un script' }}</h2>
+    <form (ngSubmit)="submitForm()" class="script-form">
+      <div class="form-group">
+        <label for="title">Titre</label>
+        <input id="title" [(ngModel)]="form.title" name="title" placeholder="Titre du script" required>
+      </div>
+
+      <div class="form-group">
+        <label for="content">Contenu</label>
+        <textarea id="content" [(ngModel)]="form.content" name="content" 
+                  placeholder="Contenu du script" rows="8" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="author">Auteur</label>
+          <input id="author" [(ngModel)]="form.createdBy" name="createdBy" placeholder="Votre nom" required>
+        </div>
+
+        <div class="form-group">
+          <label for="type">Langage</label>
+          <select id="type" [(ngModel)]="form.type" name="type" required>
+            <option value="PYTHON">Python</option>
+            <option value="R">R</option>
+            <option value="SQL">SQL</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          <i class="fas" [ngClass]="isEdit ? 'fa-save' : 'fa-plus'"></i>
+          {{ isEdit ? 'Mettre à jour' : 'Créer' }}
+        </button>
+        
+        <button *ngIf="isEdit" type="button" class="btn-secondary" 
+                (click)="resetForm()" [disabled]="isLoading">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

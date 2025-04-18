@@ -35,6 +35,11 @@ const routes: Routes = [
         loadComponent: () => import('./sideBar/dashboard/dashboard.component').then((c) => c.DashboardComponent)
 
       },
+
+      {
+        path: 'scripts', // 
+        loadComponent: () => import('./script/script/script.component').then((c) => c.ScriptComponent)
+      }
     ]
   }
 ];

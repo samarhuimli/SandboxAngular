@@ -1,4 +1,5 @@
-@import '../../../../scss/settings/color-variables.scss';
+@import 'src/scss/settings/color-variables.scss';
+
 
 .auth-main {
   position: relative;
@@ -42,7 +43,7 @@
 
       .auth-form {
         flex-direction: column;
-        background: url('../../../../assets/images/authentication/img-auth-bg.svg');
+        /**background: url('./src/assets/images/authentication/img-auth-bg.svg');**/
         min-height: 100vh;
         padding: 24px;
         background-repeat: no-repeat;
@@ -96,4 +97,9 @@
       justify-content: space-between;
     }
   }
+  .logo {
+    width: 150px; /* Vous pouvez ajuster la largeur selon vos besoins */
+    height: auto; /* Maintient les proportions de l'image */
+  }
+  
 }
