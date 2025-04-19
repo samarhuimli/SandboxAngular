@@ -39,6 +39,10 @@ const routes: Routes = [
       {
         path: 'scripts', // 
         loadComponent: () => import('./script/script/script.component').then((c) => c.ScriptComponent)
+      },
+      {
+        path: 'scripts-spaces',
+        loadComponent: () => import('./scripts-spaces/scripts-spaces.component').then((c) => c.ScriptsSpacesComponent),
       }
     ]
   }

@@ -10,6 +10,7 @@ import { SharedModule } from './theme/shared/shared.module';
 // script component
 import { ScriptComponent } from './script/script/script.component'; // Assure-toi que le chemin est correct
 import { HttpClientModule } from '@angular/common/http';
+import { ScriptsSpacesComponent } from './scripts-spaces/scripts-spaces.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,7 +20,8 @@ import { HttpClientModule } from '@angular/common/http';
     SharedModule, 
     BrowserAnimationsModule, 
     HttpClientModule,
-    ScriptComponent // Ici, tu importes ScriptComponent au lieu de le déclarer
+    ScriptComponent ,// Ici, tu importes ScriptComponent au lieu de le déclarer
+    ScriptsSpacesComponent // Ajout du nouveau composant
   ],
   bootstrap: [AppComponent]
 })

@@ -1,0 +1,45 @@
+/* scripts-spaces.component.css */
+.templates-container {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .template-cards {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  
+  .template-card {
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 20px;
+    flex: 1;
+  }
+  
+  .template-card h3 {
+    margin-top: 0;
+    color: #0366d6;
+  }
+  
+  .author {
+    color: #586069;
+    font-size: 0.9em;
+    margin: 5px 0;
+  }
+  
+  .use-template {
+    background-color: #2ea44f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .footer {
+    border-top: 1px solid #e1e4e8;
+    padding-top: 20px;
+    margin-top: 20px;
+  }
