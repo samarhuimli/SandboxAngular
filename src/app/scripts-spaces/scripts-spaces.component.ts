@@ -1,9 +1,11 @@
 // scripts-spaces.component.ts
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-scripts-spaces',
   standalone: true,
+  imports: [FormsModule], 
   templateUrl: './scripts-spaces.component.html',
   styleUrls: ['./scripts-spaces.component.scss']
 })

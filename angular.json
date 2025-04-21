@@ -24,7 +24,15 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets"],
+            "assets": [
+                  "src/favicon.ico",
+                  "src/assets",
+                  {
+                    "glob": "**/*",
+                    "input": "node_modules/pyodide",
+                    "output": "/assets/pyodide/"
+                  }
+],
             "styles": ["node_modules/bootstrap/dist/css/bootstrap.min.css",
             "src/styles.scss"],
             "scripts": []

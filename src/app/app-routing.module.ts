@@ -35,6 +35,11 @@ const routes: Routes = [
         loadComponent: () => import('./sideBar/dashboard/dashboard.component').then((c) => c.DashboardComponent)
 
       },
+      {
+        path: 'python-editor', // Le chemin que tu veux
+        loadComponent: () =>
+          import('./python-editor/python-editor.component').then((c) => c.PythonEditorComponent),
+      },
 
       {
         path: 'scripts', // 

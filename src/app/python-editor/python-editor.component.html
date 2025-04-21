@@ -1,0 +1,44 @@
+<div class="python-editor-container">
+    <h2>Explore quick start templates</h2>
+    
+    <div class="template-cards">
+      <div class="template-card" *ngFor="let template of templates">
+        <h3>{{ template.title }}</h3>
+        <div class="author">{{ template.author }}</div>
+        <p>{{ template.description }}</p>
+        <button class="use-template" (click)="useTemplate(template.code)">
+          Use this template
+        </button>
+      </div>
+    </div>
+  
+    <div class="editor-section" *ngIf="selectedTemplate">
+      <div class="editor-header">
+        <h3>Python Editor</h3>
+        <div class="editor-actions">
+          <button class="editor-button run-button" (click)="runCode()" [disabled]="isRunning">
+            {{ isRunning ? 'Running...' : 'Run Code' }}
+          </button>
+          <button class="editor-button save-button" (click)="saveToFile()">
+            Save to File
+          </button>
+          <button class="editor-button clear-button" (click)="clearEditor()">
+            Clear
+          </button>
+        </div>
+      </div>
+  
+      <textarea
+        class="code-editor"
+        [(ngModel)]="selectedTemplate"
+        placeholder="Enter your Python code here..."
+        spellcheck="false">
+      </textarea>
+  
+      <div class="output-container">
+        <h4>Output:</h4>
+        <pre class="output-content">{{ output }}</pre>
+      </div>
+    </div>
+  </div>
+  
