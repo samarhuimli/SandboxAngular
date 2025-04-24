@@ -1,16 +1,18 @@
-<div class="python-editor-container">
+<div class="templates-container">
     <h2>Explore quick start templates</h2>
-    
+  
     <div class="template-cards">
-      <div class="template-card" *ngFor="let template of templates">
-        <h3>{{ template.title }}</h3>
-        <div class="author">{{ template.author }}</div>
-        <p>{{ template.description }}</p>
-        <button class="use-template" (click)="useTemplate(template.code)">
-          Use this template
-        </button>
+        <div class="template-card" *ngFor="let template of templates">
+          <h3>{{ template.title }}</h3>
+          <div class="author">{{ template.author }}</div>
+          <p>{{ template.description }}</p>
+      
+          <button class="use-template" (click)="useTemplate(template.code)">
+            Use this template
+          </button>
+        </div>
       </div>
-    </div>
+      
   
     <div class="editor-section" *ngIf="selectedTemplate">
       <div class="editor-header">

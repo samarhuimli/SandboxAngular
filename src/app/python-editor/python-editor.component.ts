@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // <-- Ajout
 
-declare const loadPyodide: any; // 👈 pour éviter les erreurs TypeScript sur loadPyodide
+declare const loadPyodide: any;
 
 @Component({
   selector: 'app-python-editor',
@@ -15,7 +16,7 @@ export class PythonEditorComponent {
   templates = [
     {
       title: 'Python 3.12',
-      description: 'Start with the latest stable Python version',
+      description: 'Start with the latest stable Python version.',
       author: 'By FinConnect 😊',
       code: `# Python 3.12 Template
 def main():
@@ -23,7 +24,68 @@ def main():
 main()
 `
     },
-    // Tu peux ajouter d'autres templates ici
+    {
+      title: 'Python 3.12',
+      description: 'Start with the latest stable Python version.',
+      author: 'By FinConnect 😊',
+      code: `# Python 3.12 Template
+def main():
+    print("Hello from Python 3.12!")
+main()
+`
+    },
+    {
+      title: 'Python 3.12',
+      description: 'Start with the latest stable Python version.',
+      author: 'By FinConnect 😊',
+      code: `# Python 3.12 Template
+def main():
+    print("Hello from Python 3.12!")
+main()
+`
+    },
+    {
+      title: 'Python 3.12',
+      description: 'Start with the latest stable Python version.',
+      author: 'By FinConnect 😊',
+      code: `# Python 3.12 Template
+def main():
+    print("Hello from Python 3.12!")
+main()
+`
+    },
+    {
+      title: 'R 4.1',
+      description: 'Start with the latest stable R version.',
+      author: 'By FinConnect 😊',
+      code: `# R 4.1 Template
+print("Hello from R 4.1!")
+`
+    },
+    {
+      title: 'R 4.1',
+      description: 'Start with the latest stable R version.',
+      author: 'By FinConnect 😊',
+      code: `# R 4.1 Template
+print("Hello from R 4.1!")
+`
+    },
+    {
+      title: 'R 4.1',
+      description: 'Start with the latest stable R version.',
+      author: 'By FinConnect 😊',
+      code: `# R 4.1 Template
+print("Hello from R 4.1!")
+`
+    },
+    {
+      title: 'R 4.1',
+      description: 'Start with the latest stable R version.',
+      author: 'By FinConnect 😊',
+      code: `# R 4.1 Template
+print("Hello from R 4.1!")
+`
+    }
   ];
 
   selectedTemplate: string = '';
@@ -31,9 +93,14 @@ main()
   isRunning: boolean = false;
   pyodide: any = null;
 
+  constructor(private router: Router) {} // <-- Injecte Router
+
   useTemplate(code: string) {
-    this.selectedTemplate = code;
+    // Optionnel: sauvegarde dans localStorage
     localStorage.setItem('pythonTemplate', code);
+
+    // Redirection vers création de script avec le template
+    this.router.navigate(['/scripts'], { state: { templateCode: code } });
   }
 
   async runCode() {

@@ -243,6 +243,20 @@ table td .btn {
   font-size: 1rem;
 }
 
+.code-editor {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  min-height: 300px;
+}
+.output-panel {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 100px;
+  white-space: pre-wrap;
+}
+
 .btn-primary {
   background-color: #673ab7;
   color: white;
