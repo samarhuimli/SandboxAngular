@@ -13,7 +13,6 @@ import { ScriptComponent } from './script/script/script.component'; // Assure-to
 import { HttpClientModule } from '@angular/common/http';
 import { ScriptsSpacesComponent } from './scripts-spaces/scripts-spaces.component';
 import { FormsModule } from '@angular/forms';
-import { PythonEditorComponent } from './python-editor/python-editor.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,7 +25,7 @@ import { PythonEditorComponent } from './python-editor/python-editor.component';
     HttpClientModule,
     ScriptComponent ,// Ici, tu importes ScriptComponent au lieu de le déclarer
     ScriptsSpacesComponent ,// Ajout du nouveau composant
-    PythonEditorComponent
+    
   ],
   bootstrap: [AppComponent]
 })

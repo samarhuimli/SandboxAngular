@@ -76,10 +76,13 @@
           Annuler
         </button>
       </div>
-    </form>
-  </div>
 
-  <!-- 🔧 Boutons de script -->
+      <!-- 💡 Zone de sortie -->
+<div class="output-panel mt-3">
+  <strong>Sortie :</strong>
+  <div>{{ output }}</div>
+</div>
+       <!-- 🔧 Boutons de script -->
 <div class="mt-3 d-flex gap-2">
   <!-- ▶️ Bouton Run -->
   <button class="btn btn-success" (click)="runCode()" [disabled]="isRunning">
@@ -102,11 +105,11 @@
   </button>
 </div>
 
-<!-- 💡 Zone de sortie -->
-<div class="output-panel mt-3">
-  <strong>Sortie :</strong>
-  <div>{{ output }}</div>
-</div>
+    </form>
+  </div>
+
+ 
+
 
 
   <!-- ✅ MODALE POUR AFFICHER LE CONTENU DU SCRIPT -->

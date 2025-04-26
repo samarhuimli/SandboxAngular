@@ -1,36 +1,45 @@
-<!-- scripts-spaces.component.html -->
 <div class="templates-container">
   <h2>Explore quick start templates</h2>
 
   <div class="template-cards">
-    <div class="template-card">
-      <h3>Python 3.12</h3>
-      <div class="author">By FinConnect 😊</div>
-      <p>Start with the latest stable Python version for modern development.</p>
-      <button class="use-template">Use this template</button>
+      <div class="template-card" *ngFor="let template of templates">
+        <h3>{{ template.title }}</h3>
+        <div class="author">{{ template.author }}</div>
+        <p>{{ template.description }}</p>
+    
+        <button class="use-template" (click)="useTemplate(template.code)">
+          Use this template
+        </button>
+      </div>
+    </div>
+    
+
+  <div class="editor-section" *ngIf="selectedTemplate">
+    <div class="editor-header">
+      <h3>Python Editor</h3>
+      <div class="editor-actions">
+        <button class="editor-button run-button" (click)="runCode()" [disabled]="isRunning">
+          {{ isRunning ? 'Running...' : 'Run Code' }}
+        </button>
+        <button class="editor-button save-button" (click)="saveToFile()">
+          Save to File
+        </button>
+        <button class="editor-button clear-button" (click)="clearEditor()">
+          Clear
+        </button>
+      </div>
     </div>
 
-    <div class="template-card">
-      <h3>Python 3.9</h3>
-      <div class="author">By FinConnect 😊</div>
-      <p>Reliable LTS version ideal for stable production environments.</p>
-      <button class="use-template">Use this template</button>
-    </div>
+    <textarea
+      class="code-editor"
+      [(ngModel)]="selectedTemplate"
+      placeholder="Enter your Python code here..."
+      spellcheck="false">
+    </textarea>
 
-    <div class="template-card">
-      <h3>Python 3.7</h3>
-      <div class="author">By FinConnect 😊</div>
-      <p>Legacy version for compatibility with older systems.</p>
-      <button class="use-template">Use this template</button>
+    <div class="output-container">
+      <h4>Output:</h4>
+      <pre class="output-content">{{ output }}</pre>
     </div>
-  </div>
-
-  <div class="footer">
-    <strong>See all</strong>
-    <ul>
-      <li><strong>Python 3.12</strong> </li>
-      <li><strong>Python 3.9</strong></li>
-      <li><strong>Python 3.7</strong></li>
-    </ul>
   </div>
 </div>

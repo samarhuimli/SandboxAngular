@@ -50,15 +50,23 @@ export class ScriptComponent implements OnInit {
     });
   }
 
+  /**
+   * Displays the form to create a new script, optionally using a template code.
+   * 
+   * @param templateCode - Optional string containing the template code to prefill the content.
+   */
   showCreateForm(templateCode?: string): void {
+    // Initialize the form with default values or the provided template code
     this.form = {
       title: '',
       content: templateCode ?? `# Python 3.12 Template\ndef main():\n    print("Hello from Python 3.12!")\nmain()`,
       createdBy: '',
       type: 'PYTHON'
     };
+    // Set the mode to creation mode
     this.isEdit = false;
     this.mode = 'form';
+    // Clear any previous output
     this.output = '';
   }
 
