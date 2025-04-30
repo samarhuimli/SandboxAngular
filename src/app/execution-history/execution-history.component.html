@@ -1,0 +1,88 @@
+<div class="execution-history-container">
+    <div class="header-section">
+      <h2>
+        <i class="icon history"></i>
+        Historique des Exécutions
+      </h2>
+      <button class="refresh-btn" (click)="refresh()">
+        <i class="icon refresh"></i>
+        Actualiser
+      </button>
+    </div>
+  
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement en cours...</p>
+    </div>
+  
+    <div *ngIf="error" class="error-state">
+      <i class="icon error"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="refresh()">Réessayer</button>
+    </div>
+  
+    <div *ngIf="!isLoading && !error">
+      <div *ngIf="groupedExecutions.length === 0" class="empty-state">
+        <i class="icon document"></i>
+        <p>Aucune exécution disponible</p>
+      </div>
+  
+      <div *ngFor="let group of groupedExecutions" class="execution-group">
+        <div class="group-header" (click)="toggle(group.scriptId)">
+          <div class="header-content">
+            <div class="script-info">
+              <i class="icon script" [class.error]="hasAnyError(group.executions)"></i>
+              <div>
+                <h3 class="script-title">{{ group.scriptTitle }}</h3>
+                <div class="script-meta">
+                  <span class="last-execution">
+                    Dernière exécution: {{ group.executions[0]?.formattedDate || 'Inconnue' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="execution-count">
+                {{ group.executions.length }} {{ group.executions.length > 1 ? 'exécutions' : 'exécution' }}
+              </span>
+              <span class="toggle-icon">
+                {{ expandedScriptId === group.scriptId ? '▼' : '►' }}
+              </span>
+            </div>
+          </div>
+        </div>
+  
+        <div class="group-details" *ngIf="expandedScriptId === group.scriptId">
+          <div *ngFor="let exec of group.executions" class="execution-item" [class.error]="isError(exec.status)">
+            <div class="execution-header">
+              <div class="status-badge" [class.error-badge]="isError(exec.status)">
+                {{ exec.status || 'Inconnu' }}
+              </div>
+              <div class="execution-meta">
+                <span class="time">
+                  <i class="icon clock"></i>
+                  {{ exec.formattedTime }}
+                </span>
+                <span class="timestamp">
+                  <i class="icon calendar"></i>
+                  {{ exec.formattedDate }}
+                </span>
+              </div>
+            </div>
+  
+            <div class="execution-content">
+              <div class="execution-output" *ngIf="exec.output">
+                <label>Sortie:</label>
+                <pre>{{ exec.output }}</pre>
+              </div>
+  
+              <div class="execution-error" *ngIf="exec.error && isError(exec.status)">
+                <label>Erreur:</label>
+                <pre class="error-text">{{ exec.error }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

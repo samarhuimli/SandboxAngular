@@ -1,0 +1,29 @@
+<div class="container mt-4">
+    <h2>Modifier le Script</h2>
+  
+    <form (ngSubmit)="saveScript()">
+      <div class="mb-3">
+        <label for="title" class="form-label">Titre</label>
+        <input type="text" id="title" class="form-control" [(ngModel)]="script.title" name="title" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <input type="text" id="type" class="form-control" [(ngModel)]="script.type" name="type" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="createdBy" class="form-label">Créé par</label>
+        <input type="text" id="createdBy" class="form-control" [(ngModel)]="script.createdBy" name="createdBy" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="content" class="form-label">Contenu</label>
+        <textarea id="content" class="form-control" rows="6" [(ngModel)]="script.content" name="content" required></textarea>
+      </div>
+  
+      <button type="submit" class="btn btn-success me-2">Enregistrer</button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+    </form>
+  </div>
+  

@@ -16,6 +16,7 @@ const routes: Routes = [
         redirectTo: '/login',
         pathMatch: 'full'
       },
+      
       {
         path: 'login',
         loadComponent: () => import('./authentication/login/login.component')
@@ -38,9 +39,34 @@ const routes: Routes = [
       
 
       {
-        path: 'scripts', // 
+        path: 'scripts', 
         loadComponent: () => import('./script/script/script.component').then((c) => c.ScriptComponent)
       },
+
+
+
+      {
+        path: 'scripts/create',
+        loadComponent: () => import('./script/script-create/script-create.component').then(c => c.ScriptCreateComponent)
+
+      },
+
+      {
+        path: 'execution-history',
+        loadComponent: () => import('./execution-history/execution-history.component').then(c => c.ExecutionHistoryComponent)
+      },
+      {
+        path: 'scripts/edit/:id',
+        loadComponent: () => import('./script/script-edit/script-edit.component').then(c => c.ScriptEditComponent)
+      },
+
+     
+
+
+
+     
+      
+      
       {
         path: 'scripts-spaces',
         loadComponent: () => import('./scripts-spaces/scripts-spaces.component').then((c) => c.ScriptsSpacesComponent),

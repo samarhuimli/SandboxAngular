@@ -71,16 +71,16 @@ export const NavigationItems: NavigationItem[] = [
     icon: 'icon-navigation',
     children: [
       {
-        id: 'typography',
-        title: 'Typography',
+        id: 'scripts-spaces', 
+        title: 'Scripts space',
         type: 'item',
         classes: 'nav-item',
-        url: '/typography',
+        url: '/scripts-spaces',
         icon: 'font-size'
       },
       {
         id: 'color',
-        title: 'Colors',
+        title: 'Execution Result',
         type: 'item',
         classes: 'nav-item',
         url: '/color',
@@ -88,13 +88,12 @@ export const NavigationItems: NavigationItem[] = [
       },
       {
         id: 'tabler',
-        title: 'Tabler',
+        title: 'Scripts',
         type: 'item',
         classes: 'nav-item',
-        url: 'https://ant.design/components/icon',
+        url: '/scripts',
         icon: 'ant-design',
-        target: true,
-        external: true
+       
       }
     ]
   },

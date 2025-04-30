@@ -1,141 +1,54 @@
 <div class="container mt-4">
-  <!-- Liste des scripts -->
-  <div *ngIf="mode === 'list'">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Liste des Scripts</h2>
-      <button class="btn btn-primary" (click)="showCreateForm()">
-        Créer un nouveau script
-      </button>
-    </div>
-
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Titre</th>
-          <th>Type</th>
-          <th>Créé par</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let script of scripts">
-          <td>{{ script.title }}</td>
-          <td>{{ script.type }}</td>
-          <td>{{ script.createdBy }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-warning me-1" (click)="editScript(script)" title="Modifier">
-              <i class="bi bi-pencil"></i>
-            </button>
-            
-            <!-- 🗑️ Bouton Supprimer -->
-            <button class="btn btn-sm btn-outline-danger" (click)="deleteScript(script.id)" title="Supprimer">
-              <i class="bi bi-trash"></i>
-            </button>
-            <button class="btn btn-sm btn-info" (click)="openViewModal(script)">
-              <i class="bi bi-eye"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Liste des Scripts</h2>
+    <a class="btn btn-primary" [routerLink]="['/scripts/create']">
+      Créer un nouveau script
+    </a>
   </div>
 
-  <!-- Formulaire de création/modification -->
-  <div *ngIf="mode === 'form'">
-    <h2 class="mb-3">{{ isEdit ? 'Modifier le Script' : 'Créer un Script' }}</h2>
-    <form (ngSubmit)="submitForm()" class="row g-3">
-      <div class="col-md-6">
-        <label for="title" class="form-label">Titre</label>
-        <input type="text" class="form-control" id="title" [(ngModel)]="form.title" name="title" required>
-      </div>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Type</th>
+        <th>Créé par</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let script of scripts">
+        <td>{{ script.title }}</td>
+        <td>{{ script.type }}</td>
+        <td>{{ script.createdBy }}</td>
+        <td>
+          <a class="btn btn-sm btn-outline-warning me-1" [routerLink]="['/scripts/edit', script.id]" title="Modifier">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <button class="btn btn-sm btn-outline-danger me-1" (click)="deleteScript(script.id)" title="Supprimer">
+            <i class="bi bi-trash"></i>
+          </button>
+          <button class="btn btn-sm btn-info" (click)="openViewModal(script)" title="Voir">
+            <i class="bi bi-eye"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-      <div class="col-md-6">
-        <label for="createdBy" class="form-label">Créé par</label>
-        <input type="text" class="form-control" id="createdBy" [(ngModel)]="form.createdBy" name="createdBy" required>
-      </div>
-
-      <div class="col-md-6">
-        <label for="type" class="form-label">Type</label>
-        <select id="type" class="form-select" [(ngModel)]="form.type" name="type" required>
-          <option value="PYTHON">Python</option>
-          <option value="R">R</option>
-          <option value="SQL">SQL</option>
-        </select>
-      </div>
-
-      <div class="col-12">
-        <label for="content" class="form-label">Contenu</label>
-        <textarea id="content" class="form-control code-editor" [(ngModel)]="form.content" name="content" rows="10" required></textarea>
-      </div>
-
-      <div class="col-12 d-flex justify-content-end gap-2">
-        <button type="submit" class="btn btn-success">
-          {{ isEdit ? 'Mettre à jour' : 'Créer' }}
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="cancel()">
-          Annuler
-        </button>
-      </div>
-
-      <!-- 💡 Zone de sortie -->
-<div class="output-panel mt-3">
-  <strong>Sortie :</strong>
-  <div>{{ output }}</div>
-</div>
-       <!-- 🔧 Boutons de script -->
-<div class="mt-3 d-flex gap-2">
-  <!-- ▶️ Bouton Run -->
-  <button class="btn btn-success" (click)="runCode()" [disabled]="isRunning">
-    <i class="bi bi-play-fill"></i> Exécuter
-  </button>
-
-  <!-- 💾 Télécharger -->
-  <button class="btn btn-outline-primary" (click)="saveToFile()">
-    <i class="bi bi-download"></i> Télécharger
-  </button>
-
-  <!-- 🧹 Effacer -->
-  <button class="btn btn-outline-secondary" (click)="clearEditor()">
-    <i class="bi bi-trash3"></i> Effacer
-  </button>
-
-  <!-- 🔙 Annuler -->
-  <button class="btn btn-outline-dark ms-auto" (click)="cancel()">
-    <i class="bi bi-x-circle"></i> Annuler
-  </button>
-</div>
-
-    </form>
-  </div>
-
- 
-
-
-
-  <!-- ✅ MODALE POUR AFFICHER LE CONTENU DU SCRIPT -->
+  <!-- Modal de visualisation -->
   <div class="modal fade" id="viewScriptModal" tabindex="-1" aria-labelledby="viewScriptModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="viewScriptModalLabel">Contenu du Script : {{ selectedScript?.title }}</h5>
+          <h5 class="modal-title">Contenu du Script : {{ selectedScript?.title }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <!-- ✅ Affichage du contenu -->
           <pre>{{ selectedScript?.content }}</pre>
         </div>
         <div class="modal-footer">
-          <!-- ✅ Bouton copier -->
-          <button type="button" class="btn btn-outline-primary" (click)="copyToClipboard()">
-            Copier
-          </button>
-
-          <!-- ✅ Bouton télécharger -->
-          <button type="button" class="btn btn-outline-success" (click)="downloadScript()">
-            Télécharger
-          </button>
-
-          <!-- ✅ Bouton fermer -->
+          <button class="btn btn-outline-primary" (click)="copyToClipboard(selectedScript?.content)">Copier</button>
+          <button class="btn btn-outline-success" (click)="downloadScript()">Télécharger</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
         </div>
       </div>
