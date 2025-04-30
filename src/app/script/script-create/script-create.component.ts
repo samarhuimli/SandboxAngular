@@ -55,46 +55,49 @@ export class ScriptCreateComponent {
     this.output = 'Exécution du code Python...\n';
 
     try {
-      if (!this.pyodide) {
-        this.pyodide = await loadPyodide({
-          stdout: (text: string) => this.output += text,
-          stderr: (text: string) => this.output += text
-        });
-        await this.pyodide.loadPackage(['numpy']);
-      }
+        if (!this.pyodide) {
+            this.pyodide = await loadPyodide({
+                stdout: (text: string) => this.output += text,
+                stderr: (text: string) => this.output += text
+            });
+            await this.pyodide.loadPackage(['numpy']);
+        }
 
-      const result = await this.pyodide.runPython(this.form.content);
-      if (result) {
-        this.output += '\nRésultat: ' + result;
-      }
+        const result = await this.pyodide.runPython(this.form.content);
+        if (result) {
+            this.output += '\nRésultat: ' + result;
+        }
 
-      const executionTime = ((performance.now() - startTime) / 1000).toFixed(2) + 's';
-      console.log("Script ID utilisé pour enregistrer le résultat :", this.form.id);
+        // CORRECTION ICI: Convertir en nombre (millisecondes)
+        const executionTime = performance.now() - startTime;
 
-      const executionResult: ExecutionResultDTO = {
-        scriptId: this.form.id,
-        output: this.output,
-        status: 'SUCCESS',
-        executionTime
-      };
+        const executionResult: ExecutionResultDTO = {
+            scriptId: this.form.id,
+            output: this.output,
+            status: 'SUCCESS',
+            executionTime: executionTime // Envoyé comme number
+        };
 
-      this.executionService.saveExecutionResult(executionResult).subscribe();
+        this.executionService.saveExecutionResult(executionResult).subscribe();
     } catch (error: any) {
-      this.output += '\nErreur: ' + error.message;
+        this.output += '\nErreur: ' + error.message;
 
-      const executionResult: ExecutionResultDTO = {
-        scriptId: this.form.id,
-        output: this.output,
-        error: error.message,
-        status: 'FAILED'
-      };
+        // CORRECTION ICI aussi
+        const executionTime = performance.now() - startTime;
 
-      this.executionService.saveExecutionResult(executionResult).subscribe();
+        const executionResult: ExecutionResultDTO = {
+            scriptId: this.form.id,
+            output: this.output,
+            error: error.message,
+            status: 'FAILED',
+            executionTime: executionTime // Envoyé comme number
+        };
+
+        this.executionService.saveExecutionResult(executionResult).subscribe();
     } finally {
-      this.isRunning = false;
+        this.isRunning = false;
     }
-  }
-
+}
   saveToFile() {
     if (!this.form.content) return;
 

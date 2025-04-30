@@ -1,21 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ExecutionService } from 'src/app/services/execution.service';
-import { DatePipe } from '@angular/common';
+import { ExecutionResultComponent } from '../execution-result/execution-result.component';
 
 @Component({
   selector: 'app-execution-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule ,ExecutionResultComponent],
   templateUrl: './execution-history.component.html',
   styleUrls: ['./execution-history.component.scss'],
   providers: [DatePipe]
 })
+
+
 export class ExecutionHistoryComponent implements OnInit {
   groupedExecutions: any[] = [];
-  expandedScriptId: number | null = null;
   isLoading: boolean = true;
-  error: string | null = null;
+
+@Input() title: string = '';
+@Input() success: boolean = false;
+@Input() output: string = '';
+@Input() error?: string;
+
 
   constructor(
     private executionService: ExecutionService,
@@ -28,53 +34,52 @@ export class ExecutionHistoryComponent implements OnInit {
 
   loadExecutions(): void {
     this.isLoading = true;
-    this.error = null;
-    
     this.executionService.getAllExecutionsGrouped().subscribe({
       next: (data) => {
+        console.log('RAW EXECUTION DATA:', data); // 💡 debug
         this.groupedExecutions = this.processData(data);
         this.isLoading = false;
       },
-      error: (err) => {
-        this.error = 'Erreur lors du chargement des données';
+      error: () => {
         this.isLoading = false;
-        console.error(err);
       }
     });
   }
 
   private processData(data: any[]): any[] {
-    return data.map(group => ({
-      ...group,
-      scriptTitle: group.scriptTitle || `Script #${group.scriptId}`,
-      executions: group.executions.map((exec: any) => ({
-        ...exec,
-        formattedTime: this.formatExecutionTime(exec.executionTime),
-        formattedDate: this.datePipe.transform(exec.timestamp, 'dd/MM/yyyy HH:mm') || 'Date inconnue'
-      }))
-    }));
+    return data.map(group => {
+      const firstExec = group.executions[0] || {};
+  
+      return {
+        ...group,
+        scriptTitle: group.title || firstExec.title || firstExec.scriptTitle || 'Script sans titre',
+        executions: group.executions.map((exec: any) => ({
+          ...exec,
+          status: exec.success ? 'success' : 'failed', // ✅ ajoute ceci
+          formattedTime: this.formatExecutionTime(exec.executionTime),
+          formattedDate: exec.timestamp ? 
+            this.datePipe.transform(exec.timestamp, 'dd/MM/yy HH:mm') : '',
+          isCollapsed: true
+        }))
+      };
+    });
+  }
+  
+
+  private formatExecutionTime(time?: number): string {
+    if (!time) return '-';
+    return time < 1000 ? `${time} ms` : `${(time / 1000).toFixed(2)} s`;
   }
 
-  private formatExecutionTime(time: number): string {
-    if (!time) return 'N/A';
-    if (time < 1000) return `${time} ms`;
-    return `${(time / 1000).toFixed(2)} s`;
+  toggleExecution(execution: any): void {
+    execution.isCollapsed = !execution.isCollapsed;
   }
+  
 
-  toggle(scriptId: number): void {
-    this.expandedScriptId = this.expandedScriptId === scriptId ? null : scriptId;
-  }
-
-  isError(status: string): boolean {
+  isSuccess(status: string): boolean {
     if (!status) return false;
-    return ['error', 'failed', 'failure', 'err'].includes(status.toLowerCase());
+    const normalized = status.toLowerCase();
+    return normalized === 'success';
   }
-
-  hasAnyError(executions: any[]): boolean {
-    return executions.some(exec => this.isError(exec.status));
-  }
-
-  refresh(): void {
-    this.loadExecutions();
-  }
+  
 }

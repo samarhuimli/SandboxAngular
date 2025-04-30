@@ -70,22 +70,7 @@ print("Hello from R 4.1!")
 print("Hello from R 4.1!")
 `
     },
-    {
-      title: 'R 4.1',
-      description: 'Start with the latest stable R version.',
-      author: 'By FinConnect 😊',
-      code: `# R 4.1 Template
-print("Hello from R 4.1!")
-`
-    },
-    {
-      title: 'R 4.1',
-      description: 'Start with the latest stable R version.',
-      author: 'By FinConnect 😊',
-      code: `# R 4.1 Template
-print("Hello from R 4.1!")
-`
-    }
+   
   ];
 
   selectedTemplate: string = '';

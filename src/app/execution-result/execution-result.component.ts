@@ -6,15 +6,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './execution-result.component.html',
-  styles: [`
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    .accordion-button:not(.collapsed) {
-      background-color: rgba(0, 0, 0, 0.03);
-    }
-  `]
+  styleUrls: ['./execution-result.component.scss']
+  
 })
 export class ExecutionResultComponent {
   @Input() title: string = 'Résultat d\'exécution';
