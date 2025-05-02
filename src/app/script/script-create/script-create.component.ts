@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgForm } from '@angular/forms';
 import { Script, ScriptService } from '../../services/script.service';
 import { ExecutionService } from '../../services/execution.service';
 import { ExecutionResultComponent } from '../../execution-result/execution-result.component';
@@ -27,12 +28,16 @@ export class ScriptCreateComponent {
     error: 'Erreur: Division par zéro à la ligne 15'
   };
 
+  currentDate = new Date(); // Add this line here in the component class
+
   @Input() form: Script = {
     title: '',
     content: '',
     createdBy: '',
     type: 'PYTHON'
   };
+  // ... rest of your existing component code ...
+
   @Input() isEdit = false;
   @Output() submitFormEvent = new EventEmitter<void>();
   @Output() cancelEvent = new EventEmitter<void>();
@@ -118,27 +123,40 @@ export class ScriptCreateComponent {
     }
   }
 
-  submitForm() {
-    if (this.isEdit) {
+ // script-create.component.ts
+
+// Modifiez la méthode submitForm pour qu'elle accepte le formulaire en paramètre
+submitForm(scriptForm: NgForm) {
+  // Marquer tous les champs comme touchés pour afficher les erreurs
+  if (scriptForm.invalid) {
+      Object.keys(scriptForm.controls).forEach(key => {
+          scriptForm.controls[key].markAsTouched();
+      });
+      return;
+  }
+
+  if (this.isEdit) {
       // Mise à jour du script
       this.scriptService.updateScript(this.form.id!, this.form).subscribe(() => {
-        this.submitFormEvent.emit();
-        this.router.navigate(['/scripts']);
+          this.submitFormEvent.emit();
+          this.router.navigate(['/scripts']);
       });
-    } else {
-      // Création d’un nouveau script
+  } else {
+      // Création d'un nouveau script
       this.scriptService.createScript(this.form).subscribe(newScript => {
-        this.form.id = newScript.id; // Affecter l'ID pour lier les résultats d’exécution
-        this.scriptService.addScriptToLocal(newScript);
-        this.submitFormEvent.emit();
+          this.form.id = newScript.id;
+          this.scriptService.addScriptToLocal(newScript);
+          this.submitFormEvent.emit();
 
-        this.runCode(); // Exécuter après la création
-        this.router.navigate(['/scripts']);
+          this.runCode();
+          this.router.navigate(['/scripts']);
       });
-    }
   }
+}
+
 
   cancel() {
-    this.cancelEvent.emit();
-  }
+  this.router.navigate(['/scripts']);
+  this.cancelEvent.emit(); // Émet toujours l'événement au cas où un parent en aurait besoin
+}
 }

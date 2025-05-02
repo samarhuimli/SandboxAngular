@@ -120,4 +120,12 @@ export class ScriptService {
   private saveScriptsToLocalStorage(): void {
     localStorage.setItem('scripts', JSON.stringify(this.scripts));
   }
+
+  getScriptById(id: number): Observable<Script> {
+    return this.http.get<Script>(`${this.apiUrl}/${id}`);
+  }
+
+  getAllScripts(): Observable<any[]> {
+    return this.http.get<any[]>('/api/scripts');
+  }
 }

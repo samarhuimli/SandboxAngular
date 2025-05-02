@@ -52,6 +52,12 @@ const routes: Routes = [
       },
 
       {
+        path: 'scripts/view/:id',
+        loadComponent: () => import('./script/script-view/script-view.component').then(c => c.ScriptViewComponent)
+
+      },
+
+      {
         path: 'execution-history',
         loadComponent: () => import('./execution-history/execution-history.component').then(c => c.ExecutionHistoryComponent)
       },

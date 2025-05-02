@@ -34,6 +34,8 @@
     "ng-apexcharts": "^1.11.0",
     "ngx-monaco-editor": "^12.0.0",
     "ngx-scrollbar": "^15.0.1",
+    "primeicons": "^7.0.0",
+    "primeng": "^19.1.2",
     "pyodide": "^0.27.5",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.3",

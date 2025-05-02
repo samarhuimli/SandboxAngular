@@ -1,37 +1,31 @@
 <div class="container mt-4">
-    <!-- <h2 class="mb-4">Historique des Exécutions</h2> -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && groupedExecutions.length === 0" class="alert alert-info">
+    Aucune exécution disponible
+  </div>
   
-    <div *ngIf="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Chargement...</span>
+
+  <div *ngFor="let group of groupedExecutions" class="mb-4">
+    <div class="card">
+      <div class="card-header bg-light" (click)="toggleGroup(group)" style="cursor: pointer;">
+        <h5 class="mb-0">
+          {{ group.scriptTitle }}
+          <span class="float-end">
+            <i class="fas" [ngClass]="{'fa-chevron-down': group.isCollapsed, 'fa-chevron-up': !group.isCollapsed}"></i>
+          </span>
+        </h5>
       </div>
-    </div>
-  
-    <div *ngIf="!isLoading && groupedExecutions.length === 0" class="alert alert-info">
-      Aucune exécution disponible
-    </div>
-  
-    <div *ngFor="let group of groupedExecutions" class="mb-4">
-      <div *ngFor="let exec of group.executions" class="mb-3 border rounded shadow-sm">
-  
-        <!-- En-tête cliquable de l'accordéon -->
-        <div (click)="toggleExecution(exec)" class="accordion-header cursor-pointer p-3 bg-light">
-          <app-execution-result
-            [title]="exec.title || group.scriptTitle || 'Script sans titre'"
-            [success]="isSuccess(exec.status)"
-            [output]="exec.output || 'Aucun résultat'"
-            [error]="exec.error">
-          </app-execution-result>
-        </div>
-  
-        <!-- Contenu de l'accordéon (visible si non collapsed) -->
-        <div *ngIf="!exec.isCollapsed" class="accordion-body p-3">
-          <div class="text-muted small">
-            Exécuté le {{ exec.formattedDate }} (durée : {{ exec.formattedTime }})
-          </div>
-        </div>
-        
+      <div class="card-body p-0" *ngIf="!group.isCollapsed">
+        <app-execution-result
+          [title]="group.scriptTitle"
+          [executions]="group.executions">
+        </app-execution-result>
       </div>
     </div>
   </div>
-  
+</div>
