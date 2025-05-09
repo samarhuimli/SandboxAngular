@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // <-- Ajout
+import { Router } from '@angular/router';
 
-declare const loadPyodide: any;
 
 @Component({
   selector: 'app-scripts-spaces',
@@ -15,68 +14,48 @@ declare const loadPyodide: any;
 export class ScriptsSpacesComponent {
   templates = [
     {
-      title: 'Python 3.12',
-      description: 'Start with the latest stable Python version.',
-      author: 'By FinConnect 😊',
-      code: `# Python 3.12 Template
-def main():
-    print("Hello from Python 3.12!")
-main()
-`
+      title: 'Python 2.7.12',
+      description: 'Version historique de Python, souvent utilisée pour maintenir des projets anciens.',
+      author: 'FinConnect ',
+      code:'',
+     
+    },
+    {
+      title: 'Python 3.5.2',
+      description: 'Première version de Python 3 à avoir gagné en adoption, avec une meilleure prise en charge de l’asynchrone.',
+      author: 'FinConnect ',
+      
     },
     {
       title: 'Python 3.12',
-      description: 'Start with the latest stable Python version.',
-      author: 'By FinConnect 😊',
-      code: `# Python 3.12 Template
-def main():
-    print("Hello from Python 3.12!")
-main()
-`
-    },
-    {
-      title: 'Python 3.12',
-      description: 'Start with the latest stable Python version.',
-      author: 'By FinConnect 😊',
-      code: `# Python 3.12 Template
-def main():
-    print("Hello from Python 3.12!")
-main()
-`
-    },
-    {
-      title: 'Python 3.12',
-      description: 'Start with the latest stable Python version.',
-      author: 'By FinConnect 😊',
-      code: `# Python 3.12 Template
-def main():
-    print("Hello from Python 3.12!")
-main()
-`
+      description: 'Dernière version stable de Python avec des performances améliorées et des fonctionnalités modernes.',
+      author: 'FinConnect ',
+      
     },
     {
       title: 'R 4.1',
       description: 'Start with the latest stable R version.',
-      author: 'By FinConnect 😊',
-      code: `# R 4.1 Template
-print("Hello from R 4.1!")
-`
+      author: 'FinConnect ',
+    
     },
     {
       title: 'R 4.1',
       description: 'Start with the latest stable R version.',
-      author: 'By FinConnect 😊',
-      code: `# R 4.1 Template
-print("Hello from R 4.1!")
-`
+      author: 'FinConnect ',
+      
+    },
+    {
+      title: 'R 4.1',
+      description: 'Start with the latest stable R version.',
+      author: 'FinConnect ',
+     
     },
    
   ];
 
   selectedTemplate: string = '';
   output: string = '';
-  isRunning: boolean = false;
-  pyodide: any = null;
+  
 
   constructor(private router: Router) {} // <-- Injecte Router
 
@@ -85,49 +64,8 @@ print("Hello from R 4.1!")
     localStorage.setItem('pythonTemplate', code);
 
     // Redirection vers création de script avec le template
-    this.router.navigate(['/scripts'], { state: { templateCode: code } });
+    this.router.navigate(['/scripts/create'], { state: { templateCode: code } });
   }
 
-  async runCode() {
-    if (!this.selectedTemplate) return;
-
-    this.isRunning = true;
-    this.output = 'Running Python code...\n';
-
-    try {
-      if (!this.pyodide) {
-        this.pyodide = await loadPyodide({
-          stdout: (text: string) => {
-            this.output += text + '\n';
-          }
-        });
-        await this.pyodide.loadPackage(['numpy']);
-      }
-
-      const result = await this.pyodide.runPython(this.selectedTemplate);
-
-      if (result) {
-        this.output += '\nResult: ' + result;
-      }
-    } catch (error: any) {
-      this.output += '\nError: ' + error.message;
-    } finally {
-      this.isRunning = false;
-    }
-  }
-
-  saveToFile() {
-    const blob = new Blob([this.selectedTemplate], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'python_script.py';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  clearEditor() {
-    this.selectedTemplate = '';
-    this.output = '';
-  }
+  
 }

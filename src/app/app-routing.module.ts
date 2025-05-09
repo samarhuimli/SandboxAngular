@@ -13,7 +13,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/login',
+        redirectTo: '/scripts',
         pathMatch: 'full'
       },
       

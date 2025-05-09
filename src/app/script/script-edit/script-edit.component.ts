@@ -6,45 +6,42 @@ import { ScriptService, Script } from '../../services/script.service';
 import { ExecutionResultComponent } from '../../execution-result/execution-result.component';
 import { ExecutionService } from 'src/app/services/execution.service';
 import { NgForm } from '@angular/forms';
-
-
-
+import { ExecutionResultDTO } from 'src/app/models/execution-result.model';
 
 declare function loadPyodide(config: {
   stdout?: (text: string) => void,
   stderr?: (text: string) => void
 }): Promise<any>;
 
-
 @Component({
   selector: 'app-script-edit',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, ExecutionResultComponent],
   templateUrl: './script-edit.component.html',
+  styleUrls: ['./script-edit.component.scss']
 })
 export class ScriptEditComponent implements OnInit {
-
   scriptId!: number;
-  script: Script = { id: 0, title: '', type: 'PYTHON', createdBy: '', content: '' }; // 🔥 Valeurs par défaut
-
+  script: Script = { id: 0, title: '', type: 'PYTHON', createdBy: '', content: '' };
+  
   output: string = '';
   isRunning: boolean = false;
   pyodide: any = null;
-  
+  editorFocused: boolean = false;
+  lastRunTime: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private scriptService: ScriptService,
     private router: Router,
-    private executionService: ExecutionService // ⚠️ Assure-toi que ce service est bien injecté
+    private executionService: ExecutionService
   ) {}
-  
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.scriptId = +id;
-        // 🔥 Correction ici : on s'abonne à l'observable
         this.scriptService.findScriptById(this.scriptId).subscribe({
           next: (foundScript) => {
             this.script = { ...foundScript };
@@ -58,39 +55,92 @@ export class ScriptEditComponent implements OnInit {
     });
   }
 
+  insertTemplate() {
+    if (!this.script.type) return;
+    
+    switch (this.script.type) {
+      case 'PYTHON':
+        this.script.content = `# Python script template\nimport pandas as pd\n\n# Your code here\n`;
+        break;
+      case 'R':
+        this.script.content = `# R script template\nlibrary(tidyverse)\n\n# Your code here\n`;
+        break;
+      case 'SQL':
+        this.script.content = `-- SQL script template\nSELECT * FROM table_name\nWHERE condition;\n`;
+        break;
+      default:
+        this.script.content = `# ${this.script.type} script template\n\n# Your code here\n`;
+    }
+  }
+
+  formatCode() {
+    if (!this.script.content) return;
+    
+    if (this.script.type === 'PYTHON') {
+      this.script.content = this.script.content
+        .split('\n')
+        .map(line => line.trim() ? '    ' + line.trim() : '')
+        .join('\n');
+    }
+  }
+
   async runCode() {
-    if (!this.script.content || this.script.type !== 'PYTHON') return;
-  
+    if (!this.script.content || !this.script.type) return;
+
     const startTime = performance.now();
     this.isRunning = true;
-    this.output = 'Exécution du code Python...\n';
-  
+    this.output = `Exécution du code ${this.script.type}...\n`;
+    this.lastRunTime = new Date().toLocaleString();
+
     try {
-      if (!this.pyodide) {
-        this.pyodide = await loadPyodide({
-          stdout: (text: string) => this.output += text,
-          stderr: (text: string) => this.output += text
-        });
-        await this.pyodide.loadPackage(['numpy']);
+      if (this.script.type === 'PYTHON') {
+        if (!this.pyodide) {
+          this.pyodide = await loadPyodide({
+            stdout: (text: string) => this.output += text,
+            stderr: (text: string) => this.output += text
+          });
+          await this.pyodide.loadPackage(['numpy']);
+        }
+
+        const result = await this.pyodide.runPython(this.script.content);
+        if (result) this.output += '\nRésultat: ' + result;
+
+        const executionTime = Math.round(performance.now() - startTime);
+        this.executionService.saveExecutionResult({
+          scriptId: this.script.id,
+          output: this.output,
+          status: 'SUCCESS',
+          executionTime: executionTime
+        }).subscribe();
+      } else if (this.script.type === 'R') {
+        const response = await this.executionService.executeRCode(this.script.content, this.script.id).toPromise();
+        if (response.error) {
+          this.output += '\nErreur: ' + response.error;
+          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime); // Forcé en string avant parseInt
+          this.executionService.saveExecutionResult({
+            scriptId: this.script.id,
+            output: this.output,
+            error: response.error,
+            status: 'FAILED',
+            executionTime: executionTime
+          }).subscribe();
+        } else {
+          this.output += '\nRésultat: ' + response.output;
+          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime); // Forcé en string avant parseInt
+          this.executionService.saveExecutionResult({
+            scriptId: this.script.id,
+            output: response.output,
+            status: 'SUCCESS',
+            executionTime: executionTime
+          }).subscribe();
+        }
+      } else {
+        throw new Error('Type de script non supporté');
       }
-  
-      const result = await this.pyodide.runPython(this.script.content);
-      if (result) this.output += '\nRésultat: ' + result;
-  
-      const executionTime = performance.now() - startTime;
-  
-      this.executionService.saveExecutionResult({
-        scriptId: this.script.id,
-        output: this.output,
-        status: 'SUCCESS',
-        executionTime: executionTime
-      }).subscribe();
-  
     } catch (error: any) {
       this.output += '\nErreur: ' + error.message;
-  
-      const executionTime = performance.now() - startTime;
-  
+
+      const executionTime = Math.round(performance.now() - startTime);
       this.executionService.saveExecutionResult({
         scriptId: this.script.id,
         output: this.output,
@@ -98,7 +148,6 @@ export class ScriptEditComponent implements OnInit {
         status: 'FAILED',
         executionTime: executionTime
       }).subscribe();
-  
     } finally {
       this.isRunning = false;
     }
@@ -106,8 +155,18 @@ export class ScriptEditComponent implements OnInit {
   
   saveToFile() {
     if (!this.script.content) return;
-  
-    const filename = this.script.title ? `${this.script.title.replace(/[^a-z0-9]/gi, '_')}.py` : 'script.py';
+
+    let extension = '.txt';
+    switch (this.script.type) {
+      case 'PYTHON': extension = '.py'; break;
+      case 'R': extension = '.r'; break;
+      case 'SQL': extension = '.sql'; break;
+    }
+    
+    const filename = this.script.title 
+      ? `${this.script.title.replace(/[^a-z0-9]/gi, '_')}${extension}` 
+      : `script${extension}`;
+      
     const blob = new Blob([this.script.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -123,14 +182,7 @@ export class ScriptEditComponent implements OnInit {
       this.output = '';
     }
   }
-  
 
-  focusTextarea(event: MouseEvent) {
-    const textarea = event.target as HTMLTextAreaElement;
-    textarea.setSelectionRange(0, 0);
-    textarea.focus();
-  }
-  
   saveScript() {
     if (!this.script.title || !this.script.type || !this.script.createdBy || !this.script.content) {
       return;
@@ -141,7 +193,6 @@ export class ScriptEditComponent implements OnInit {
     });
   }
   
-
   cancel() {
     this.router.navigate(['/scripts']);
   }

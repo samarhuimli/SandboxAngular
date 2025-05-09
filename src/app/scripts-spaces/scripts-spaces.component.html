@@ -1,5 +1,5 @@
 <div class="templates-container">
-  <h2 class="section-title">Explore Our Python Templates</h2>
+  <h2 class="section-title">Your script spaces</h2>
   <!-- <p class="section-subtitle">Quickly start your project with these pre-built templates</p> -->
 
   <div class="template-cards">
@@ -16,32 +16,6 @@
     </div>
   </div>
 
-  <div class="editor-section" *ngIf="selectedTemplate">
-    <div class="editor-header">
-      <h3><i class="fas fa-code"></i> Python Editor</h3>
-      <div class="editor-actions">
-        <button class="editor-button run-button" (click)="runCode()" [disabled]="isRunning">
-          <i class="fas fa-play"></i> {{ isRunning ? 'Running...' : 'Run Code' }}
-        </button>
-        <button class="editor-button save-button" (click)="saveToFile()">
-          <i class="fas fa-save"></i> Save
-        </button>
-        <button class="editor-button clear-button" (click)="clearEditor()">
-          <i class="fas fa-trash-alt"></i> Clear
-        </button>
-      </div>
-    </div>
-
-    <textarea
-      class="code-editor"
-      [(ngModel)]="selectedTemplate"
-      placeholder="Enter your Python code here..."
-      spellcheck="false">
-    </textarea>
-
-    <div class="output-container">
-      <h4><i class="fas fa-terminal"></i> Output:</h4>
-      <pre class="output-content">{{ output }}</pre>
-    </div>
-  </div>
+  
+ 
 </div>

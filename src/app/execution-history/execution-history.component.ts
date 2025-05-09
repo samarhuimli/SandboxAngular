@@ -30,46 +30,51 @@ export class ExecutionHistoryComponent implements OnInit {
     this.isLoading = true;
     this.executionService.getAllExecutionsGrouped().subscribe({
       next: (data) => {
+        console.log('Données brutes de l\'API:', JSON.stringify(data, null, 2));
         this.groupedExecutions = this.processData(data);
+        console.log('Executions groupées traitées:', this.groupedExecutions);
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Erreur lors du chargement:', err);
         this.isLoading = false;
       }
     });
   }
-  async deleteExecution(executionId: string): Promise<void> {
-  try {
-    await this.executionService.deleteExecution(executionId).toPromise();
-    this.groupedExecutions = this.groupedExecutions.map(group => ({
-      ...group,
-      executions: group.executions.filter(exec => exec._id !== executionId)
-    }));
-  } catch (err) {
-    console.error('Échec de la suppression:', err);
-  }
-}
 
-private processData(data: any[]): any[] {
-  return data.map(group => {
-    const firstExec = group.executions[0] || {};
-    return {
-      ...group,
-      scriptTitle: group.title || firstExec.title || firstExec.scriptTitle || 'Script sans titre',
-     executions: group.executions
-  .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-  .map((exec: any) => ({
-    ...exec,
-    status: exec.success ? 'success' : 'failed',
-    formattedTime: this.formatExecutionTime(exec.executionTime),
-    formattedDate: exec.timestamp ? this.datePipe.transform(exec.timestamp, 'dd/MM/yy HH:mm') : '',
-    createdBy: exec.createdBy || 'Inconnu'
-}))
-,
-      isCollapsed: true // Le groupe lui-même est aussi fermé par défaut
-    };
-  });
-}
+  private processData(data: any[]): any[] {
+    return data.map(group => {
+      const firstExec = group.executions[0] || {};
+      const executions = group.executions
+        .map((exec: any) => {
+          const executionId = exec._id || exec.id || null;
+          if (!executionId) {
+            console.warn('Execution sans _id ou id:', exec);
+          }
+          // Normaliser success en fonction de error
+          const success = !exec.error; // Une exécution est réussie uniquement s'il n'y a pas d'erreur
+          console.log('Exécution traitée:', { id: executionId, success, output: exec.output, error: exec.error });
+          return {
+            ...exec,
+            _id: executionId,
+            success: success, // S'assurer que success est cohérent avec error
+            timestamp: exec.timestamp ? new Date(exec.timestamp) : new Date(),
+            status: success ? 'success' : 'failed',
+            formattedTime: this.formatExecutionTime(exec.executionTime),
+            formattedDate: exec.timestamp ? this.datePipe.transform(exec.timestamp, 'dd/MM/yy HH:mm') : '',
+            createdBy: exec.createdBy || 'Inconnu'
+          };
+        })
+        .sort((a: any, b: any) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      return {
+        ...group,
+        scriptTitle: group.title || firstExec.title || firstExec.scriptTitle || 'Script sans titre',
+        executions: executions,
+        isCollapsed: true
+      };
+    });
+  }
 
   private formatExecutionTime(time?: number): string {
     if (!time) return '-';
@@ -79,33 +84,36 @@ private processData(data: any[]): any[] {
   toggleGroup(group: any): void {
     group.isCollapsed = !group.isCollapsed;
   }
-  isSuccess(status: string): boolean {
-    if (!status) return false;
-    return status.toLowerCase() === 'success';
-  }
 
-  requestDeleteExecution(executionId: string, event: MouseEvent): void {
-    event.stopPropagation();
+  requestDeleteExecution(executionId: string): void {
+    console.log('requestDeleteExecution appelé avec executionId:', executionId);
     this.executionToDelete = executionId;
     this.showConfirmModal = true;
+    console.log('showConfirmModal défini à:', this.showConfirmModal);
   }
 
   confirmDelete(): void {
     if (this.executionToDelete) {
+      console.log('Suppression de l\'exécution:', this.executionToDelete);
       this.executionService.deleteExecution(this.executionToDelete).subscribe({
         next: () => {
+          console.log('Suppression réussie');
           this.loadExecutions();
           this.closeModal();
         },
         error: (err) => {
-          console.error('Erreur lors de la suppression', err);
+          console.error('Erreur lors de la suppression:', err);
           this.closeModal();
         }
       });
+    } else {
+      console.error('Aucun executionId à supprimer');
+      this.closeModal();
     }
   }
 
   closeModal(): void {
+    console.log('Fermeture de la modale');
     this.showConfirmModal = false;
     this.executionToDelete = null;
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 
 export interface Script {
   id?: number;
@@ -60,6 +60,11 @@ export class ScriptService {
       catchError((error) => {
         console.error('Erreur lors de la suppression du script', error);
         return throwError(() => new Error('Erreur lors de la suppression du script'));
+      }),
+      tap(() => {
+        this.scripts = this.scripts.filter(script => script.id !== id);
+        this.scriptsSubject.next(this.scripts);
+        this.saveScriptsToLocalStorage();
       })
     );
   }
@@ -125,7 +130,7 @@ export class ScriptService {
     return this.http.get<Script>(`${this.apiUrl}/${id}`);
   }
 
-  getAllScripts(): Observable<any[]> {
-    return this.http.get<any[]>('/api/scripts');
-  }
+  // getAllScripts(): Observable<any[]> {
+  //   return this.http.get<any[]>('/api/scripts');
+  // }
 }

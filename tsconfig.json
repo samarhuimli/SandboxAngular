@@ -2,6 +2,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "lib": ["es2020", "dom", "webworker"],
+    "skipLibCheck": true ,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
@@ -29,4 +31,5 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   }
+  
 }

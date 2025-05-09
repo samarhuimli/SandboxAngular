@@ -28,14 +28,25 @@ export class ScriptComponent implements OnInit {
   constructor(private scriptService: ScriptService, private router: Router) {}
 
   ngOnInit(): void {
-    this.scriptService.getScriptsObservable().subscribe(scripts => {
-      this.scripts = scripts;
-      this.filteredScripts = [...this.scripts];
-      
-      // Extraire les types et utilisateurs uniques pour les options de filtre
-      this.availableTypes = [...new Set(scripts.map(s => s.type))];
-      this.availableUsers = [...new Set(scripts.map(s => s.createdBy))];
+    this.loadScripts();
+    this.scriptService.getAllScriptsFromBackend();
+  }
+
+  loadScripts(): void {
+    this.scriptService.getScriptsObservable().subscribe({
+      next: (scripts) => {
+        this.scripts = scripts;
+        this.filteredScripts = [...scripts];
+        this.updateFilterOptions();
+        this.applyFilters(); // Applique les filtres après le chargement
+      },
+      error: (err) => console.error('Erreur lors du chargement des scripts', err)
     });
+  }
+
+  updateFilterOptions(): void {
+    this.availableTypes = [...new Set(this.scripts.map(s => s.type))];
+    this.availableUsers = [...new Set(this.scripts.map(s => s.createdBy))];
   }
 
   applyFilters(): void {
@@ -65,22 +76,19 @@ export class ScriptComponent implements OnInit {
   }
 
   deleteScript(id: number) {
-    this.scriptService.deleteScript(id).subscribe(() => {
-      this.scripts = this.scripts.filter(s => s.id !== id);
-      this.filteredScripts = this.filteredScripts.filter(s => s.id !== id);
-      this.scriptService.updateScripts(this.scripts);
+    this.scriptService.deleteScript(id).subscribe({
+      next: () => {
+        console.log('Script supprimé avec succès');
+      },
+      error: (err) => console.error('Erreur lors de la suppression', err)
     });
   }
 
   copyToClipboard(text: string) {
     if (text) {
       navigator.clipboard.writeText(text)
-        .then(() => {
-          console.log('Texte copié !');
-        })
-        .catch(err => {
-          console.error('Erreur lors de la copie:', err);
-        });
+        .then(() => console.log('Texte copié !'))
+        .catch(err => console.error('Erreur lors de la copie:', err));
     }
   }
 

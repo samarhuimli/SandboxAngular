@@ -7,6 +7,7 @@ import { Script, ScriptService } from '../../services/script.service';
 import { ExecutionService } from '../../services/execution.service';
 import { ExecutionResultComponent } from '../../execution-result/execution-result.component';
 import { ExecutionResultDTO } from 'src/app/models/execution-result.model';
+import { HttpClient } from '@angular/common/http';
 
 declare function loadPyodide(config: {
   stdout?: (text: string) => void,
@@ -22,13 +23,13 @@ declare function loadPyodide(config: {
 })
 export class ScriptCreateComponent {
   executionResult = {
-    title: 'Mon Script Python',
+    title: 'Mon Script',
     success: false,
     output: 'Début de l\'exécution...\nCalcul terminé',
-    error: 'Erreur: Division par zéro à la ligne 15'
+    error: 'Erreur: Division par zéro'
   };
 
-  currentDate = new Date(); // Add this line here in the component class
+  currentDate = new Date();
 
   @Input() form: Script = {
     title: '',
@@ -36,7 +37,6 @@ export class ScriptCreateComponent {
     createdBy: '',
     type: 'PYTHON'
   };
-  // ... rest of your existing component code ...
 
   @Input() isEdit = false;
   @Output() submitFormEvent = new EventEmitter<void>();
@@ -49,64 +49,69 @@ export class ScriptCreateComponent {
   constructor(
     private scriptService: ScriptService,
     private router: Router,
-    private executionService: ExecutionService
+    private executionService: ExecutionService,
+    private http: HttpClient
   ) {}
 
   async runCode() {
-    if (!this.form.content || this.form.type !== 'PYTHON') return;
+    if (!this.form.content || !this.form.type) return;
 
     const startTime = performance.now();
     this.isRunning = true;
-    this.output = 'Exécution du code Python...\n';
+    this.output = `Exécution du code ${this.form.type}...\n`;
 
     try {
-        if (!this.pyodide) {
-            this.pyodide = await loadPyodide({
-                stdout: (text: string) => this.output += text,
-                stderr: (text: string) => this.output += text
-            });
-            await this.pyodide.loadPackage(['numpy']);
-        }
+      if (this.form.type === 'PYTHON') {
+        await this.runPythonCode();
+      } else if (this.form.type === 'R') {
+        await this.runRCode();
+      } else {
+        throw new Error('Type de script non supporté');
+      }
 
-        const result = await this.pyodide.runPython(this.form.content);
-        if (result) {
-            this.output += '\nRésultat: ' + result;
-        }
-
-        // CORRECTION ICI: Convertir en nombre (millisecondes)
-        const executionTime = performance.now() - startTime;
-
-        const executionResult: ExecutionResultDTO = {
-            scriptId: this.form.id,
-            output: this.output,
-            status: 'SUCCESS',
-            executionTime: executionTime // Envoyé comme number
-        };
-
-        this.executionService.saveExecutionResult(executionResult).subscribe();
+      const executionTime = performance.now() - startTime;
+      this.output += `\nTemps d'exécution: ${executionTime} ms`;
     } catch (error: any) {
-        this.output += '\nErreur: ' + error.message;
-
-        // CORRECTION ICI aussi
-        const executionTime = performance.now() - startTime;
-
-        const executionResult: ExecutionResultDTO = {
-            scriptId: this.form.id,
-            output: this.output,
-            error: error.message,
-            status: 'FAILED',
-            executionTime: executionTime // Envoyé comme number
-        };
-
-        this.executionService.saveExecutionResult(executionResult).subscribe();
+      this.output += '\nErreur: ' + error.message;
     } finally {
-        this.isRunning = false;
+      this.isRunning = false;
     }
-}
+  }
+
+  private async runPythonCode() {
+    if (!this.pyodide) {
+      this.pyodide = await loadPyodide({
+        stdout: (text: string) => this.output += text + '\n',
+        stderr: (text: string) => this.output += text + '\n'
+      });
+      await this.pyodide.loadPackage(['numpy']);
+    }
+
+    const result = await this.pyodide.runPython(this.form.content);
+    if (result) {
+      this.output += '\nRésultat: ' + result;
+    }
+  }
+
+  private async runRCode() {
+    try {
+      const response = await this.executionService.executeRCode(this.form.content, this.form.id).toPromise();
+      if (response.error) {
+        this.output += '\nErreur: ' + response.error;
+      } else {
+        this.output += '\nRésultat: ' + response.output;
+      }
+    } catch (error: any) {
+      this.output += '\nErreur: Échec de la connexion au serveur Spring - ' + error.message;
+      console.error('Erreur HTTP:', error);
+    }
+  }
+
   saveToFile() {
     if (!this.form.content) return;
 
-    const filename = this.form.title ? `${this.form.title.replace(/[^a-z0-9]/gi, '_')}.py` : 'script.py';
+    const extension = this.form.type === 'R' ? 'R' : 'py';
+    const filename = this.form.title ? `${this.form.title.replace(/[^a-z0-9]/gi, '_')}.${extension}` : `script.${extension}`;
     const blob = new Blob([this.form.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -123,40 +128,60 @@ export class ScriptCreateComponent {
     }
   }
 
- // script-create.component.ts
-
-// Modifiez la méthode submitForm pour qu'elle accepte le formulaire en paramètre
-submitForm(scriptForm: NgForm) {
-  // Marquer tous les champs comme touchés pour afficher les erreurs
-  if (scriptForm.invalid) {
+  submitForm(scriptForm: NgForm) {
+    if (scriptForm.invalid) {
       Object.keys(scriptForm.controls).forEach(key => {
-          scriptForm.controls[key].markAsTouched();
+        scriptForm.controls[key].markAsTouched();
       });
       return;
-  }
+    }
 
-  if (this.isEdit) {
-      // Mise à jour du script
+    if (this.isEdit) {
       this.scriptService.updateScript(this.form.id!, this.form).subscribe(() => {
-          this.submitFormEvent.emit();
-          this.router.navigate(['/scripts']);
+        this.saveScriptAndExecution();
+        this.submitFormEvent.emit();
+        this.router.navigate(['/scripts']);
       });
-  } else {
-      // Création d'un nouveau script
+    } else {
       this.scriptService.createScript(this.form).subscribe(newScript => {
-          this.form.id = newScript.id;
-          this.scriptService.addScriptToLocal(newScript);
-          this.submitFormEvent.emit();
-
-          this.runCode();
-          this.router.navigate(['/scripts']);
+        this.form.id = newScript.id;
+        this.scriptService.addScriptToLocal(newScript);
+        this.saveScriptAndExecution();
+        this.submitFormEvent.emit();
+        this.router.navigate(['/scripts']);
       });
+    }
   }
-}
 
+  private saveScriptAndExecution() {
+    if (!this.form.title || !this.form.content) return;
+
+    // Sauvegarder le script (si ce n'est pas déjà fait)
+    if (!this.isEdit && !this.form.id) {
+      this.scriptService.createScript(this.form).subscribe(newScript => {
+        this.form.id = newScript.id;
+        this.scriptService.addScriptToLocal(newScript);
+      });
+    }
+
+    // Sauvegarder l'exécution
+    if (this.output) {
+      const executionResult: ExecutionResultDTO = {
+        scriptId: this.form.id,
+        output: this.output,
+        status: this.output.includes('Erreur') ? 'FAILED' : 'SUCCESS',
+        executionTime: Math.round(performance.now())
+      };
+
+      this.executionService.saveExecutionResult(executionResult).subscribe({
+        next: () => console.log('Résultat sauvegardé avec succès'),
+        error: (err) => console.error('Erreur lors de la sauvegarde:', err)
+      });
+    }
+  }
 
   cancel() {
-  this.router.navigate(['/scripts']);
-  this.cancelEvent.emit(); // Émet toujours l'événement au cas où un parent en aurait besoin
-}
+    this.router.navigate(['/scripts']);
+    this.cancelEvent.emit();
+  }
 }
