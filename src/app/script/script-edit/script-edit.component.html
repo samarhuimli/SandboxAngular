@@ -131,6 +131,44 @@
           </div>
         </div>
       </form>
+
+      <!-- Historique des exécutions -->
+      <div class="card mt-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2"></i>
+            Historique des exécutions de {{ script.title || 'ce script' }}
+          </h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="toggleExecutionHistory()">
+            {{ showExecutionHistory ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        <div class="card-body p-0" *ngIf="showExecutionHistory">
+          <div *ngIf="!groupedExecutions.length" class="alert alert-info m-3">
+            Aucune exécution disponible pour ce script.
+          </div>
+          <div *ngFor="let group of groupedExecutions">
+            <div class="card mb-2">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center" (click)="group.isCollapsed = !group.isCollapsed" style="cursor: pointer;">
+                <h6 class="mb-0">
+                  {{ group.scriptTitle }}
+                  <span class="badge bg-secondary ms-2">{{ group.executions.length }} exécution(s)</span>
+                </h6>
+                <span>
+                  <i class="fas" [ngClass]="{'fa-chevron-down': group.isCollapsed, 'fa-chevron-up': !group.isCollapsed}"></i>
+                </span>
+              </div>
+              <div class="card-body p-0" *ngIf="!group.isCollapsed">
+                <app-execution-result
+                  [title]="group.scriptTitle"
+                  [executions]="group.executions"
+                  (deleteExecution)="onDeleteExecution($event)">
+                </app-execution-result>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

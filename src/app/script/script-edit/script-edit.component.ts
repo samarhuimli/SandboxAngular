@@ -7,6 +7,7 @@ import { ExecutionResultComponent } from '../../execution-result/execution-resul
 import { ExecutionService } from 'src/app/services/execution.service';
 import { NgForm } from '@angular/forms';
 import { ExecutionResultDTO } from 'src/app/models/execution-result.model';
+import { DatePipe } from '@angular/common';
 
 declare function loadPyodide(config: {
   stdout?: (text: string) => void,
@@ -18,7 +19,8 @@ declare function loadPyodide(config: {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, ExecutionResultComponent],
   templateUrl: './script-edit.component.html',
-  styleUrls: ['./script-edit.component.scss']
+  styleUrls: ['./script-edit.component.scss'],
+  providers: [DatePipe]
 })
 export class ScriptEditComponent implements OnInit {
   scriptId!: number;
@@ -29,12 +31,15 @@ export class ScriptEditComponent implements OnInit {
   pyodide: any = null;
   editorFocused: boolean = false;
   lastRunTime: string | null = null;
+  groupedExecutions: any[] = []; // Similaire à ExecutionHistoryComponent
+  showExecutionHistory: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private scriptService: ScriptService,
     private router: Router,
-    private executionService: ExecutionService
+    private executionService: ExecutionService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -51,8 +56,60 @@ export class ScriptEditComponent implements OnInit {
             this.router.navigate(['/scripts']);
           }
         });
+        this.loadExecutions();
       }
     });
+  }
+
+  loadExecutions(): void {
+    this.executionService.getAllExecutionsGrouped().subscribe({
+      next: (data) => {
+        console.log('Données brutes de getAllExecutionsGrouped:', data);
+        this.groupedExecutions = this.processData(data).filter(group => group.scriptId === this.scriptId);
+        console.log('Executions groupées pour scriptId', this.scriptId, ':', this.groupedExecutions);
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des exécutions:', err);
+      }
+    });
+  }
+
+  private processData(data: any[]): any[] {
+    return data.map(group => {
+      const firstExec = group.executions[0] || {};
+      const executions = group.executions
+        .map((exec: any) => {
+          const executionId = exec._id || exec.id || null;
+          if (!executionId) {
+            console.warn('Execution sans _id ou id:', exec);
+          }
+          // Utiliser directement la propriété 'success' des données brutes
+          const success = exec.success !== undefined ? exec.success : false;
+          console.log('Exécution:', exec);
+          console.log('Success:', success);
+          return {
+            ...exec,
+            _id: executionId,
+            success: success,
+            timestamp: exec.timestamp ? new Date(exec.timestamp) : new Date(exec.executedAt ? new Date(exec.executedAt) : new Date()),
+            formattedTime: this.formatExecutionTime(exec.executionTime),
+            formattedDate: exec.timestamp ? this.datePipe.transform(exec.timestamp, 'dd/MM/yy HH:mm') : exec.executedAt ? this.datePipe.transform(exec.executedAt, 'dd/MM/yy HH:mm') : '',
+            // createdBy: exec.createdBy || 'Inconnu'
+          };
+        })
+        .sort((a: any, b: any) => b.timestamp.getTime() - a.timestamp.getTime());
+  
+      return {
+        scriptId: group.scriptId || firstExec.scriptId,
+        scriptTitle: group.scriptTitle || firstExec.scriptTitle || this.script.title || 'Script sans titre',
+        executions: executions,
+        isCollapsed: true
+      };
+    });
+  }
+  private formatExecutionTime(time?: number): string {
+    if (!time) return '-';
+    return time < 1000 ? `${time} ms` : `${(time / 1000).toFixed(2)} s`;
   }
 
   insertTemplate() {
@@ -111,28 +168,28 @@ export class ScriptEditComponent implements OnInit {
           output: this.output,
           status: 'SUCCESS',
           executionTime: executionTime
-        }).subscribe();
+        }).subscribe(() => this.loadExecutions());
       } else if (this.script.type === 'R') {
         const response = await this.executionService.executeRCode(this.script.content, this.script.id).toPromise();
         if (response.error) {
           this.output += '\nErreur: ' + response.error;
-          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime); // Forcé en string avant parseInt
+          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime);
           this.executionService.saveExecutionResult({
             scriptId: this.script.id,
             output: this.output,
             error: response.error,
             status: 'FAILED',
             executionTime: executionTime
-          }).subscribe();
+          }).subscribe(() => this.loadExecutions());
         } else {
           this.output += '\nRésultat: ' + response.output;
-          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime); // Forcé en string avant parseInt
+          const executionTime = response.executionTime ? parseInt(response.executionTime.toString(), 10) : Math.round(performance.now() - startTime);
           this.executionService.saveExecutionResult({
             scriptId: this.script.id,
             output: response.output,
             status: 'SUCCESS',
             executionTime: executionTime
-          }).subscribe();
+          }).subscribe(() => this.loadExecutions());
         }
       } else {
         throw new Error('Type de script non supporté');
@@ -147,7 +204,7 @@ export class ScriptEditComponent implements OnInit {
         error: error.message,
         status: 'FAILED',
         executionTime: executionTime
-      }).subscribe();
+      }).subscribe(() => this.loadExecutions());
     } finally {
       this.isRunning = false;
     }
@@ -195,5 +252,21 @@ export class ScriptEditComponent implements OnInit {
   
   cancel() {
     this.router.navigate(['/scripts']);
+  }
+
+  toggleExecutionHistory(): void {
+    this.showExecutionHistory = !this.showExecutionHistory;
+  }
+
+  onDeleteExecution(executionId: string): void {
+    this.executionService.deleteExecution(executionId).subscribe({
+      next: () => {
+        console.log('Exécution supprimée avec succès');
+        this.loadExecutions();
+      },
+      error: (err) => {
+        console.error('Erreur lors de la suppression:', err);
+      }
+    });
   }
 }

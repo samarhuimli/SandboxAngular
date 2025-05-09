@@ -1,4 +1,5 @@
 export interface ExecutionResultDTO {
+    id?: number; // Ajouté
     scriptId?: number;
     scriptTitle?: string;
     output: string;
